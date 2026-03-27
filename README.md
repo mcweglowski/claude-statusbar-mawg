@@ -14,6 +14,10 @@ Opus 4.6 │ effort:high │ ████░░░░ 42% │ main* │ $1.23 �
   ▘▘ ▝▝  5h:34% │ +42 -7 │ cache:67%
 ```
 
+### Screenshot
+<img width="730" height="172" alt="image" src="https://github.com/user-attachments/assets/2558da3e-3d41-4bcd-a00a-f424cfdcb636" />
+
+
 ## Installation
 
 ```
