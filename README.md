@@ -17,7 +17,7 @@ Opus 4.6 │ effort:high │ ████░░░░ 42% │ main* │ $1.23 �
 ## Installation
 
 ```
-/plugin marketplace add santiagoyeomans/claude-statusbar
+/plugin marketplace add SYM1000/claude-statusbar
 /plugin install statusbar
 /statusbar:setup
 ```
