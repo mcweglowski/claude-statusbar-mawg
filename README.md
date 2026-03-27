@@ -1,4 +1,4 @@
-# statusbar
+# Claude Code statusbar
 
 A customizable status bar plugin for [Claude Code](https://claude.ai/code) that displays real-time session metrics at the bottom of your terminal.
 
