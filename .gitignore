@@ -6,4 +6,4 @@ node_modules/
 .cache.json
 /statusbar-config.json
 .claude/
-PRODUCTION_SPEC.md
+specs/
