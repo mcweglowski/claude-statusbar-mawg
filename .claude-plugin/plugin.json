@@ -1,9 +1,11 @@
 {
-  "name": "claude-statusbar",
-  "version": "1.0.0",
+  "name": "statusbar",
+  "version": "1.1.0",
   "description": "Customizable status bar with 20+ widgets, 3 layouts, pixel art mascot, and interactive configuration for Claude Code",
-  "author": { "name": "Santiago Yeomans" },
-  "homepage": "https://github.com/SYM1000/claude-statusbar",
-  "repository": "https://github.com/SYM1000/claude-statusbar",
+  "author": {
+    "name": "Santiago Yeomans"
+  },
+  "homepage": "https://github.com/mcweglowski/claude-statusbar-mawg",
+  "repository": "https://github.com/mcweglowski/claude-statusbar-mawg",
   "license": "MIT"
 }

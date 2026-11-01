@@ -21,7 +21,7 @@ if (!isConfigured) {
   // Output a reminder as a hook message (shown to Claude, not directly to user)
   const msg = {
     message: 'statusbar plugin is installed but not configured. ' +
-      'Run /claude-statusbar:setup to enable the status bar.'
+      'Run /statusbar:setup to enable the status bar.'
   };
   process.stdout.write(JSON.stringify(msg));
 }

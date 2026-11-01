@@ -14,7 +14,7 @@ You are helping the user configure their statusbar plugin. You will present a vi
 
 ## Check for preset argument
 
-If the user provided a preset name as an argument (e.g., `/claude-statusbar:config developer`), skip the interactive UI and jump directly to **Apply Preset** below.
+If the user provided a preset name as an argument (e.g., `/statusbar:config developer`), skip the interactive UI and jump directly to **Apply Preset** below.
 
 Available presets and their widget mappings:
 
@@ -309,5 +309,5 @@ Join enabled widgets with ` │ ` separator. For standard layout, split across 2
 Tell the user:
 - Configuration saved
 - Changes take effect on the **next Claude response** (status bar auto-refreshes)
-- Run `/claude-statusbar:config` again anytime to reconfigure
-- Apply presets directly: `/claude-statusbar:config developer`
+- Run `/statusbar:config` again anytime to reconfigure
+- Apply presets directly: `/statusbar:config developer`

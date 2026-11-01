@@ -19,7 +19,7 @@ Based on the user's message, determine which action to perform:
 - **uninstall**: Remove the status bar configuration
 - **status**: Check current configuration state
 
-If the user just typed `/claude-statusbar:setup` with no additional context, assume **setup**.
+If the user just typed `/statusbar:setup` with no additional context, assume **setup**.
 
 ## Step 1: Check current status
 
@@ -50,7 +50,7 @@ Parse the JSON output. If successful, tell the user:
 
 1. **Status bar is now configured!**
 2. They need to **restart Claude Code** for the status bar to appear
-3. After restarting, they can customize the status bar with `/claude-statusbar:config`
+3. After restarting, they can customize the status bar with `/statusbar:config`
 4. Show the default widgets that are enabled: model, context usage, cost, duration, git branch
 
 If any step failed, show the error and suggest manual troubleshooting.
@@ -67,7 +67,7 @@ Tell the user the status bar has been removed and they need to restart Claude Co
 
 ### For `status`:
 
-Just display the status information from Step 1 in a readable format. If not configured, suggest running `/claude-statusbar:setup`.
+Just display the status information from Step 1 in a readable format. If not configured, suggest running `/statusbar:setup`.
 
 ## Important notes
 
