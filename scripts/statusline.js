@@ -102,10 +102,18 @@ function cached(key, ttlMs, fn) {
 function getTerminalWidth() {
   return cached('termWidth', 5000, () => {
     try {
-      const tty = execSync('ps -o tty= -p $(ps -o ppid= -p $$)', {
-        encoding: 'utf-8', timeout: 500, stdio: ['pipe', 'pipe', 'pipe']
-      }).trim();
-      if (!tty || tty === '??') return 120;
+      // Claude Code runs this script detached from its terminal, so walk up
+      // the process tree until an ancestor with a controlling tty is found.
+      let tty = '';
+      let pid = process.ppid;
+      for (let depth = 0; depth < 10 && pid > 1; depth++) {
+        const [ppid, t] = execSync(`ps -o ppid=,tty= -p ${pid}`, {
+          encoding: 'utf-8', timeout: 500, stdio: ['pipe', 'pipe', 'pipe']
+        }).trim().split(/\s+/);
+        if (t && t !== '??' && t !== '?') { tty = t; break; }
+        pid = parseInt(ppid, 10);
+      }
+      if (!tty) return 120;
       const size = execSync(`stty size < /dev/${tty}`, {
         encoding: 'utf-8', timeout: 500, shell: true, stdio: ['pipe', 'pipe', 'pipe']
       }).trim();
@@ -339,13 +347,20 @@ const WIDGET_DEFS = [
     id: 'git',
     priority: 6,
     defaultEnabled: true,
-    compute(data) {
+    compute(data, config) {
       const dir = data.workspace?.current_dir || data.workspace?.project_dir;
       if (!dir) return null;
       const info = getGitInfo(dir);
       if (!info) return null;
       const dirty = info.dirty ? `${C.gitDirty}*${RESET}` : '';
-      return w(`${C.gitBranch}${info.branch}${RESET}${dirty}`);
+      const maxBranch = config.maxBranchWidth || 30;
+      let branch = info.branch;
+      if (branch.length > maxBranch) {
+        const head = Math.ceil((maxBranch - 1) / 2);
+        const tail = maxBranch - 1 - head;
+        branch = branch.slice(0, head) + '\u2026' + branch.slice(branch.length - tail);
+      }
+      return w(`${C.gitBranch}${branch}${RESET}${dirty}`);
     }
   },
   // ─── Tier 2: Developer ───
@@ -529,6 +544,41 @@ const WIDGET_DEFS = [
   }
 ];
 
+// Labels shown when every widget fits in labeled form.
+// strip: the short-form prefix the label replaces.
+const WIDGET_LABELS = {
+  'model':        { label: 'Model' },
+  'effort':       { label: 'Effort', strip: 'effort:' },
+  'context':      { label: 'Usage' },
+  'cost':         { label: 'Cost' },
+  'duration':     { label: 'Time' },
+  'git':          { label: 'Branch' },
+  'session':      { label: 'Session' },
+  'lines':        { label: 'Lines' },
+  'rate-5h':      { label: 'Limit 5h', strip: '5h:' },
+  'rate-7d':      { label: 'Limit 7d', strip: '7d:' },
+  'tokens':       { label: 'Tokens' },
+  'cache':        { label: 'Cache', strip: 'cache:' },
+  'context-size': { label: 'Context' },
+  'latency':      { label: 'API', strip: 'api:' },
+  'messages':     { label: 'Messages', strip: '✉ ' },
+  'total-tokens': { label: 'Total', strip: 'Σ ' },
+  'tools-used':   { label: 'Tools', strip: '⚒ ' },
+  'vim':          { label: 'Vim' },
+  'mcp':          { label: 'MCP', strip: 'MCP:' },
+  'worktree':     { label: 'Worktree', strip: 'wt:' },
+  'agent':        { label: 'Agent' },
+  'style':        { label: 'Style' },
+};
+
+/** Labeled form of a widget result, e.g. "Cost: $0.98" with a dimmed label. */
+function labelWidget(id, wr) {
+  const def = WIDGET_LABELS[id];
+  if (!def) return wr;
+  const body = def.strip ? wr.text.replace(def.strip, '') : wr.text;
+  return w(`${DIM}${def.label}: ${RESET}${body}`);
+}
+
 // Build a lookup map for fast access
 const WIDGET_MAP = {};
 for (const wd of WIDGET_DEFS) WIDGET_MAP[wd.id] = wd;
@@ -620,17 +670,13 @@ function fillLine(widgets, separator, maxW) {
   const overflow = [];
   let first = true;
 
-  let i = 0;
-  for (; i < widgets.length; i++) {
-    const wr = widgets[i];
+  for (const wr of widgets) {
     const needed = first ? wr.width : sepW + wr.width;
-    if (usedW + needed > maxW) break; // Stop: remaining widgets go to overflow
+    if (usedW + needed > maxW) { overflow.push(wr); continue; } // Skip: later, smaller widgets may still fit
     line += first ? wr.text : sepAnsi + wr.text;
     usedW += needed;
     first = false;
   }
-  // All widgets from the break point onward are overflow
-  for (; i < widgets.length; i++) overflow.push(widgets[i]);
   return { line, overflow };
 }
 
@@ -681,6 +727,17 @@ function layoutMascot(widgetResults, separator, maxW) {
     const dataStr = dataLines[i] || '';
     return dataStr ? `${ml}${gap}${dataStr}` : ml;
   });
+}
+
+/**
+ * True if every widget fits within lineCount lines of width lineW.
+ */
+function fitsAll(widgets, separator, lineW, lineCount) {
+  let rest = widgets;
+  for (let n = 0; n < lineCount && rest.length > 0; n++) {
+    rest = fillLine(rest, separator, lineW).overflow;
+  }
+  return rest.length === 0;
 }
 
 // =============================================================================
@@ -751,11 +808,21 @@ function main() {
     if (wd.id === 'mascot') continue; // handled by layout
     if (!isWidgetEnabled(wd, config)) continue;
     const result = wd.compute(data, config);
-    if (result) widgetResults.push(result);
+    if (result) widgetResults.push({ ...result, id: wd.id });
   }
 
   // Apply layout
   const separator = config.separator || ' \u2502 ';
+
+  // Use labeled widgets only when all of them fit (all or nothing)
+  if (config.labels !== false) {
+    const lineCount = layout === 'mascot' ? 3 : layout === 'standard' ? 2 : 1;
+    const lineW = layout === 'mascot' ? maxW - (MASCOT_CHAR_WIDTH + 1) : maxW;
+    const labeled = widgetResults.map(wr => labelWidget(wr.id, wr));
+    if (fitsAll(labeled, separator, lineW, lineCount)) {
+      widgetResults.splice(0, widgetResults.length, ...labeled);
+    }
+  }
   let outputLines;
 
   switch (layout) {
