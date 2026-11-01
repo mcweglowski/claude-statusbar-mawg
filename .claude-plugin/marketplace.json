@@ -1,9 +1,9 @@
 {
-  "name": "claude-statusbar",
+  "name": "mawg-marketplace",
   "description": "Custom status bar for Claude Code",
-  "owner": { "name": "Santiago Yeomans" },
+  "owner": { "name": "Marcin Weglowski" },
   "plugins": [{
-    "name": "statusbar",
+    "name": "claude-statusbar",
     "description": "Customizable status bar with 20+ widgets, 3 layouts, pixel art mascot, and interactive configuration",
     "source": "./"
   }]

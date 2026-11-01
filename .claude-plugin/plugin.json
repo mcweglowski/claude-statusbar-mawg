@@ -1,5 +1,5 @@
 {
-  "name": "statusbar",
+  "name": "claude-statusbar",
   "version": "1.0.0",
   "description": "Customizable status bar with 20+ widgets, 3 layouts, pixel art mascot, and interactive configuration for Claude Code",
   "author": { "name": "Santiago Yeomans" },

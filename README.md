@@ -22,8 +22,8 @@ Opus 4.6 │ effort:high │ ████░░░░ 42% │ main* │ $1.23 �
 
 ```
 /plugin marketplace add SYM1000/claude-statusbar
-/plugin install statusbar
-/statusbar:setup
+/plugin install claude-statusbar@mawg-marketplace
+/claude-statusbar:setup
 ```
 
 Restart Claude Code after setup. The status bar will appear at the bottom of every session.
@@ -32,12 +32,12 @@ Restart Claude Code after setup. The status bar will appear at the bottom of eve
 
 Customize interactively:
 ```
-/statusbar:config
+/claude-statusbar:config
 ```
 
 Or apply a preset directly:
 ```
-/statusbar:config developer
+/claude-statusbar:config developer
 ```
 
 ### Presets
@@ -145,7 +145,7 @@ echo '{"model":{"display_name":"Opus 4.6"},"context_window":{"used_percentage":4
 ## Uninstall
 
 ```
-/statusbar:setup uninstall
+/claude-statusbar:setup uninstall
 ```
 
 Then restart Claude Code.
